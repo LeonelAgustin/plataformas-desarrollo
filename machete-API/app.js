@@ -1,6 +1,9 @@
 const exorres = require('express');
 const bodyParser = require('body-parser');
 
+//conexion a la base de datos
+const connection = require('./db');
+
 const app = exorres();// esto es una instancia de express, trae todas las funcionalidades de express
 const port = 8888;// si tienen una aplicacion en el mismop uerto 8888, hayq ue cambiar el numero aca
 
@@ -25,6 +28,42 @@ app.get('/', (req, res) => {//aca le indicamos que queresmo hacer cuando alguien
     //res es el objeto que va a responder desde el servidor al cliente
 });
 
+app.get('/eventos', async(req,res)=>{
+    const query = `
+            SELECT id, nombre, descripcion, cupo
+            FROM eventos
+        `;
+    try{
+        const [results] = await connection.query(query);
+        res.json({ success: true, results });
+    }catch(error){
+        console.error( error);
+        res.status(500).json({ success: false, message: 'Error al intentar recuperar los eventos' });
+    }
+    
+});
+
+app.get('/eventos/:ID', async(req,res)=>{
+    const {ID}= req.params;
+    const query = `
+        SELECT id, nombre, descripcion, cupo
+        FROM eventos
+        WHERE id = ?
+    `;
+     try{        
+        [results] = await connection.query(query, [ID]);
+        if(results.length == 0){
+            res.status(404).json({ success: false, message: 'El evento no existe' });
+        }else{
+            res.json({ success: true, result: results[0] });
+        }
+    }catch(error){
+        console.log(error);
+        res.status(500).json({ success: false, message: 'Error al intentar recuperar el evento' });
+    }
+
+});
+
 app.get('/saludo/:nombre', (req, res) => {//con ':' express entiende que lo que venga despues es una variable
     //const nombre = req.params.nombre;// esto es parecido a $_GET['GET'] en php
     const {nombre}= req.params;
@@ -41,3 +80,4 @@ app.use((req,res, next)=>{
         <a href="/">Volver al inicio</a>
         `);
 })
+
