@@ -25,6 +25,19 @@ app.get('/', (req, res) => {//aca le indicamos que queresmo hacer cuando alguien
     //res es el objeto que va a responder desde el servidor al cliente
 });
 
-app.get('/saludo', (req, res) => {
-    res.send('hola');
+app.get('/saludo/:nombre', (req, res) => {//con ':' express entiende que lo que venga despues es una variable
+    //const nombre = req.params.nombre;// esto es parecido a $_GET['GET'] en php
+    const {nombre}= req.params;
+    res.send('hola '+nombre);
+    res.json();
 });
+
+//con esto podemos personzalizar el mensaje de error 404
+app.use((req,res, next)=>{
+    res.status(404);
+    res.send(`
+        <h1>404 - pagina no encontrada</h1>
+        <p>La pagina que buscas no existe</p>
+        <a href="/">Volver al inicio</a>
+        `);
+})
